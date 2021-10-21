@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            width: 95vw;
+            height: 95vh;
+            margin: 0;
+        }
+
+        #container {
+            padding: 0 10px;
+            background-color: black;
+            margin: 0 auto;
+            width: 90%;
+            height: 70%;
+            position: relative;
+        }
+
+        .line {
+            position: absolute;
+            bottom: 5px;
+        }
+
+        .navbar {
+            width: 90%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px auto;
+            align-items: center;
+        }
+
+        .function {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .manage {
+            flex: 3;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-around;
+            padding: 10px;
+        }
+
+        .algo {
+            flex: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        button {
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 20px;
+            padding: 15px;
+        }
+
+        button:hover {
+            background-color: teal;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="control">
+            <button id="generate">Generate</button>
+            <button id="reset">Reset</button>
+            <button id="stop">Stop</button>
+        </div>
+        <div class="manage">
+            <div class="function">
+                <label for="qty">Array Size</label>
+                <input type="range" name="qty" id="qty" min="10" max="300">
+                <label for="qty" id="qty-label"></label>
+            </div>
+            <div class="function">
+                <label for="delay">Delay</label>
+                <input type="range" name="delay" id="delay" min="1" max="2500">
+                <label for="delay" id="delay-label"></label>
+            </div>
+        </div>
+        <div class="algo">
+            <button id="bubble-sort">Bubble Sort</button>
+            <button id="selection-sort">Selection Sort</button>
+            <button id="merge-sort">Merge Sort</button>
+        </div>
+    </div>
+    <div id="container"></div>
+</body>
+<script>
+    var process = false;
+
+    const barColor = "white";
+    const indexColor = "red";
+    const finishingColor = "blue";
+
+    const container = document.getElementById('container');
+    const delay_div = document.getElementById('delay');
+    const qty_div = document.getElementById('qty');
+    const delay_label = document.getElementById('delay-label');
+    const qty_label = document.getElementById('qty-label');
+    const generate = document.getElementById('generate');
+    const reset = document.getElementById('reset');
+    const stop = document.getElementById('stop');
+
+    var delay = delay_div.value = 150 / 10;
+    var qty = qty_div.value = 100;
+
+    delay_label.innerText = delay + "ms";
+    delay_div.addEventListener("change", (e) => {
+        delay = e.target.value / 10;
+        delay_label.innerText = e.target.value / 10 + "ms";
+    });
+
+    qty_label.innerText = qty;
+    qty_div.addEventListener("change", (e) => {
+        qty = e.target.value;
+        qty_label.innerText = e.target.value;
+    });
+
+    var offset = 0.7 * container.offsetHeight / qty;
+    var array = Array.from({
+        length: qty
+    }, (_, idx) => idx + 1);
+    // }, (_idx) => Math.floor(Math.random() * qty + 1));
+
+    function shuffle(array) {
+        let currentIndex = array.length,
+            randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]
+            ];
+        }
+    }
+
+
+    function displayLines() {
+        shuffle(array);
+        container.innerHTML = "";
+        array.forEach((value, idx) => {
+            const span = document.createElement('span');
+            const val = (container.offsetWidth - 10) / qty;
+            span.className = "line";
+            span.style.height = `${offset*value}px`;
+            span.style.width = `${parseInt(val/2)}px`;
+            span.style.transition = `${delay*0.001}s transform ease`;
+            span.style.transform = `translate(${idx*val}px)`;
+            span.style.backgroundColor = barColor;
+            container.appendChild(span);
+        });
+    }
+
+    function generateData() {
+        process = false;
+        offset = 0.7 * container.offsetHeight / qty;
+        array = Array.from({
+            length: qty
+        }, () => Math.floor(Math.random() * qty + 1));
+        displayLines();
+    }
+
+    displayLines();
+
+    function swap(nodeA, nodeB) {
+        return new Promise((resolve) => {
+            let temp = nodeA.style.transform;
+            nodeA.style.transform = nodeB.style.transform;
+            nodeB.style.transform = temp;
+            window.requestAnimationFrame(function () {
+                setTimeout(() => {
+                    const parentA = nodeA.parentNode;
+                    const siblingA = nodeA.nextSibling === nodeB ? nodeA : nodeA
+                        .nextSibling;
+                    nodeB.parentNode.insertBefore(nodeA, nodeB);
+                    parentA.insertBefore(nodeB, siblingA);
+                    resolve();
+                }, delay);
+            });
+        });
+    };
+
+    async function wait(ms) {
+        return new Promise((resolve) => setTimeout(() => resolve(), ms));
+    }
+
+    async function finishing() {
+        let lines = document.querySelectorAll('.line');
+        for (let i = 0; i < lines.length; i++) {
+            lines[i].style.backgroundColor = indexColor;
+            await wait(delay);
+            lines[i].style.backgroundColor = finishingColor;
+        }
+    }
+
+    async function bubbleSort() {
+        if (process) return;
+        process = true;
+        let lines = document.querySelectorAll('.line');
+        for (let i = 0; i < lines.length; i++) {
+            let flag = false;
+            for (let j = 0; j < lines.length - i - 1; j++) {
+                lines[j].style.backgroundColor = indexColor;
+                lines[j + 1].style.backgroundColor = indexColor;
+                await wait(delay);
+                if (lines[j].clientHeight > lines[j + 1].clientHeight) {
+                    flag = true;
+                    await swap(lines[j], lines[j + 1]);
+                    lines = document.querySelectorAll('.line');
+                }
+                lines[j].style.backgroundColor = barColor;
+                lines[j + 1].style.backgroundColor = barColor;
+                if (!process) return;
+            }
+            if (!flag) {
+                break;
+            }
+            if (!process) return;
+        }
+        await finishing();
+        process = false;
+    }
+
+    async function selectionSort() {
+        if (process) return;
+        process = true;
+        let lines = container.childNodes;
+        for (let i = 0; i < lines.length; i++) {
+            let min = i;
+            lines[i].style.backgroundColor = "pink";
+            for (let j = i + 1; j < lines.length; j++) {
+                lines[j].style.backgroundColor = indexColor;
+                await wait(delay);
+                lines[j].style.backgroundColor = barColor;
+                if (lines[min].clientHeight > lines[j].clientHeight) {
+                    if (min != i)
+                        lines[min].style.backgroundColor = barColor;
+                    min = j;
+                    lines[min].style.backgroundColor = "green";
+                }
+                if (!process) return;
+            }
+            lines[i].style.backgroundColor = barColor;
+            if (min != i) {
+                lines[min].style.backgroundColor = barColor;
+                await swap(lines[i], lines[min]);
+                lines = container.childNodes
+            }
+            if (!process) return;
+        }
+        await finishing();
+        process = false;
+    }
+
+    async function merge(temp, l, m, r) {
+        if (!process) return;
+        let arr = document.querySelectorAll('.line');
+        let n1 = m - l + 1;
+        let n2 = r - m;
+
+        let L = new Array(n1);
+        let R = new Array(n2);
+
+        for (let i = 0; i < n1; i++)
+            L[i] = temp[l + i];
+        for (let j = 0; j < n2; j++)
+            R[j] = temp[m + 1 + j];
+
+        let i = 0;
+        let j = 0;
+        let k = l;
+
+        while (i < n1 && j < n2) {
+            if (!process) return;
+            arr[l + i].style.backgroundColor = indexColor;
+            arr[m + 1 + j].style.backgroundColor = indexColor;
+            await wait(delay);
+            arr[l + i].style.backgroundColor = barColor;
+            arr[m + 1 + j].style.backgroundColor = barColor;
+            if (L[i].clientHeight <= R[j].clientHeight) {
+                temp[k] = L[i];
+                i++;
+            } else {
+                temp[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i < n1) {
+            if (!process) return;
+            temp[k] = L[i];
+            arr[l + i].style.backgroundColor = indexColor;
+            await wait(delay);
+            arr[l + i].style.backgroundColor = barColor;
+            i++;
+            k++;
+        }
+
+        while (j < n2) {
+            if (!process) return;
+            temp[k] = R[j];
+            arr[m + 1 + j].style.backgroundColor = indexColor;
+            await wait(delay);
+            arr[m + 1 + j].style.backgroundColor = barColor;
+            j++;
+            k++;
+        }
+        for (let s = l; s <= r; s++) {
+            if (!process) return;
+            if (temp[s] !== arr[s]) {
+                await swap(temp[s], arr[s]);
+                arr = document.querySelectorAll('.line');
+            }
+        }
+    }
+
+    async function mergeSort(temp, low, high) {
+        if (!process) return;
+        if (low >= high) return;
+        let mid = low + parseInt((high - low) / 2);
+        await mergeSort(temp, low, mid);
+        await mergeSort(temp, mid + 1, high);
+        await merge(temp, low, mid, high);
+    }
+
+    function disable() {
+        // generate.setAttribute("disabled");
+    }
+
+    document.getElementById('bubble-sort').addEventListener("click", () => {
+        bubbleSort();
+        // disable();
+    });
+    document.getElementById('selection-sort').addEventListener("click", () => {
+        selectionSort()
+    });
+    document.getElementById('merge-sort').addEventListener("click", async () => {
+        if (process) return;
+        process = true;
+        await mergeSort(Array.from(document.querySelectorAll('.line')), 0, document.querySelectorAll(
+            '.line').length - 1);
+        if (!process) return;
+        await finishing();
+        process = false;
+    });
+    generate.addEventListener("click", () => generateData());
+    stop.addEventListener("click", () => process = false);
+    reset.addEventListener("click", () => {
+        process = false;
+        displayLines();
+    });
+</script>
+
+</html>
