@@ -137,10 +137,7 @@
     });
 
     var offset = 0.7 * container.offsetHeight / qty;
-    var array = Array.from({
-        length: qty
-    }, (_, idx) => idx + 1);
-    // }, (_idx) => Math.floor(Math.random() * qty + 1));
+    var array = [];
 
     function shuffle(array) {
         let currentIndex = array.length,
@@ -156,7 +153,6 @@
 
 
     function displayLines() {
-        shuffle(array);
         container.innerHTML = "";
         array.forEach((value, idx) => {
             const span = document.createElement('span');
@@ -176,11 +172,12 @@
         offset = 0.7 * container.offsetHeight / qty;
         array = Array.from({
             length: qty
-        }, () => Math.floor(Math.random() * qty + 1));
+        }, (_, idx) => idx + 1);
+        shuffle(array);
         displayLines();
     }
 
-    displayLines();
+    generateData();
 
     function swap(nodeA, nodeB) {
         return new Promise((resolve) => {
