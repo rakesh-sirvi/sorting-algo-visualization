@@ -8,23 +8,26 @@
     <title>Document</title>
     <style>
         body {
-            width: 95vw;
-            height: 95vh;
+            height: 100vh;
             margin: 0;
         }
 
+        .visual-algo {
+            height: 60%;
+        }
+
         #container {
-            padding: 0 10px;
-            background-color: black;
-            margin: 0 auto;
             width: 90%;
-            height: 70%;
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 10px;
+            background-color: #1a1c1c;
             position: relative;
         }
 
         .line {
             position: absolute;
-            bottom: 5px;
+            bottom: 10px;
         }
 
         .navbar {
@@ -33,7 +36,8 @@
             flex-wrap: wrap;
             justify-content: space-around;
             margin: 20px auto;
-            align-items: center;
+            gap: 5px;
+            align-content: center;
         }
 
         .function {
@@ -101,16 +105,19 @@
             <button id="bubble-sort">Bubble Sort</button>
             <button id="selection-sort">Selection Sort</button>
             <button id="merge-sort">Merge Sort</button>
+            <button id="quick-sort">Quick Sort</button>
         </div>
     </div>
-    <div id="container"></div>
+    <div class="visual-algo">
+        <div id="container"></div>
+    </div>
 </body>
 <script>
     var process = false;
 
     const barColor = "white";
     const indexColor = "red";
-    const finishingColor = "blue";
+    const finishingColor = "#ebffa4";
 
     const container = document.getElementById('container');
     const delay_div = document.getElementById('delay');
@@ -122,7 +129,7 @@
     const stop = document.getElementById('stop');
 
     var delay = delay_div.value = 150 / 10;
-    var qty = qty_div.value = 100;
+    var qty = qty_div.value = 300;
 
     delay_label.innerText = delay + "ms";
     delay_div.addEventListener("change", (e) => {
@@ -136,7 +143,7 @@
         qty_label.innerText = e.target.value;
     });
 
-    var offset = 0.7 * container.offsetHeight / qty;
+    var offset = 0;
     var array = [];
 
     function shuffle(array) {
@@ -154,14 +161,14 @@
 
     function displayLines() {
         container.innerHTML = "";
+        const val = (container.offsetWidth - 18) / qty;
         array.forEach((value, idx) => {
             const span = document.createElement('span');
-            const val = (container.offsetWidth - 10) / qty;
             span.className = "line";
-            span.style.height = `${offset*value}px`;
-            span.style.width = `${parseInt(val/2)}px`;
-            span.style.transition = `${delay*0.001}s transform ease`;
-            span.style.transform = `translate(${idx*val}px)`;
+            span.style.height = `${(offset*value).toPrecision()}px`;
+            span.style.width = `${val*0.85}px`;
+            span.style.transition = `${delay*0.01}s transform ease`;
+            span.style.transform = `translateX(${(idx*val).toPrecision()}px)`;
             span.style.backgroundColor = barColor;
             container.appendChild(span);
         });
@@ -169,7 +176,7 @@
 
     function generateData() {
         process = false;
-        offset = 0.7 * container.offsetHeight / qty;
+        offset = Math.floor(0.9 * container.offsetHeight / qty * 10) / 10;
         array = Array.from({
             length: qty
         }, (_, idx) => idx + 1);
@@ -341,31 +348,110 @@
         await merge(temp, low, mid, high);
     }
 
-    function disable() {
-        // generate.setAttribute("disabled");
+    async function partition(left, right) {
+        if (!process) return;
+        let items = document.querySelectorAll(".line");
+        let pivot = items[Math.floor((right + left) / 2)];
+        let i = left;
+        let j = right;
+        while (i <= j) {
+            if (!process) return;
+            while (items[i].clientHeight < pivot.clientHeight) {
+                if (!process) return;
+                items[i].style.backgroundColor = indexColor;
+                await wait(delay);
+                items[i].style.backgroundColor = barColor;
+                i++;
+            }
+            while (items[j].clientHeight > pivot.clientHeight) {
+                if (!process) return;
+                items[j].style.backgroundColor = indexColor;
+                await wait(delay);
+                items[j].style.backgroundColor = barColor;
+                j--;
+            }
+            if (i <= j) {
+                items[i].style.backgroundColor = indexColor;
+                items[j].style.backgroundColor = indexColor;
+                await wait(delay);
+                await swap(items[i], items[j]);
+                items[i].style.backgroundColor = barColor;
+                items[j].style.backgroundColor = barColor;
+                items = document.querySelectorAll("#container > .line");
+                i++;
+                j--;
+            }
+        }
+        return i;
     }
 
-    document.getElementById('bubble-sort').addEventListener("click", () => {
-        bubbleSort();
-        // disable();
+    async function quickSort(left, right) {
+        if (!process) return;
+        let index = await partition(left, right);
+        if (left < index - 1) {
+            await quickSort(left, index - 1);
+        }
+        if (index < right) {
+            await quickSort(index, right);
+        }
+    }
+
+    function disable(flag) {
+        if (flag) {
+            generate.setAttribute("disabled", "");
+            qty_div.setAttribute("disabled", "");
+            document.getElementById('bubble-sort').setAttribute("disabled", "");
+            document.getElementById('selection-sort').setAttribute("disabled", "");
+            document.getElementById('merge-sort').setAttribute("disabled", "");
+            document.getElementById('quick-sort').setAttribute("disabled", "");
+        } else {
+            generate.removeAttribute("disabled");
+            qty_div.removeAttribute("disabled");
+            document.getElementById('bubble-sort').removeAttribute("disabled");
+            document.getElementById('selection-sort').removeAttribute("disabled");
+            document.getElementById('merge-sort').removeAttribute("disabled");
+            document.getElementById('quick-sort').removeAttribute("disabled");
+        }
+    }
+
+    document.getElementById('bubble-sort').addEventListener("click", async () => {
+        disable(true);
+        await bubbleSort();
+        disable(false);
     });
-    document.getElementById('selection-sort').addEventListener("click", () => {
-        selectionSort()
+    document.getElementById('selection-sort').addEventListener("click", async () => {
+        disable(true);
+        await selectionSort();
+        disable(false);
     });
     document.getElementById('merge-sort').addEventListener("click", async () => {
-        if (process) return;
+        disable(true);
         process = true;
         await mergeSort(Array.from(document.querySelectorAll('.line')), 0, document.querySelectorAll(
             '.line').length - 1);
         if (!process) return;
         await finishing();
+        disable(false);
+        process = false;
+    });
+    document.getElementById('quick-sort').addEventListener("click", async () => {
+        disable(true);
+        process = true;
+        await quickSort(0, document.querySelectorAll('.line').length - 1);
+        if (!process) return;
+        await finishing();
+        disable(false);
         process = false;
     });
     generate.addEventListener("click", () => generateData());
-    stop.addEventListener("click", () => process = false);
+    stop.addEventListener("click", () => {
+        process = false;
+        disable(false);
+    });
     reset.addEventListener("click", () => {
         process = false;
         displayLines();
+        disable(false);
     });
 </script>
 
