@@ -78,10 +78,6 @@
             color: white;
         }
 
-        button:hover {
-            background-color: teal;
-        }
-
         button:disabled {
             background-color: lightgray;
         }
@@ -98,7 +94,7 @@
         <div class="manage">
             <div class="function">
                 <label for="qty">Array Size</label>
-                <input type="range" name="qty" id="qty" min="10" max="300" value="50">
+                <input type="range" name="qty" id="qty" min="10" max="500" value="50">
                 <label for="qty" id="qty-label"></label>
             </div>
             <div class="function">
@@ -218,6 +214,7 @@
     async function finishing() {
         let lines = document.querySelectorAll('.line');
         for (let i = 0; i < lines.length; i++) {
+            if (!process) return;
             lines[i].style.backgroundColor = indexColor;
             await wait(delay);
             lines[i].style.backgroundColor = finishingColor;
@@ -275,7 +272,7 @@
             if (min != i) {
                 lines[min].style.backgroundColor = barColor;
                 await swap(lines[i], lines[min]);
-                lines = container.childNodes
+                lines = container.children;
             }
             if (!process) return;
         }
@@ -357,49 +354,33 @@
 
     async function partition(left, right) {
         if (!process) return;
-        let items = document.querySelectorAll(".line");
-        let pivot = items[Math.floor((right + left) / 2)];
-        let i = left;
-        let j = right;
-        while (i <= j) {
-            if (!process) return;
-            while (items[i].clientHeight < pivot.clientHeight) {
-                if (!process) return;
-                items[i].style.backgroundColor = indexColor;
-                await wait(delay);
-                items[i].style.backgroundColor = barColor;
+        let items = document.querySelectorAll("#container > .line");
+        let pivot = items[right];
+        let i = left - 1;
+        for (let j = left; j <= right; j++) {
+            let temp = i + 1;
+            items[temp].style.backgroundColor = indexColor;
+            items[j].style.backgroundColor = indexColor;
+            if (items[j].clientHeight < pivot.clientHeight) {
                 i++;
-            }
-            while (items[j].clientHeight > pivot.clientHeight) {
-                if (!process) return;
-                items[j].style.backgroundColor = indexColor;
-                await wait(delay);
-                items[j].style.backgroundColor = barColor;
-                j--;
-            }
-            if (i <= j) {
-                items[i].style.backgroundColor = indexColor;
-                items[j].style.backgroundColor = indexColor;
-                await wait(delay);
                 await swap(items[i], items[j]);
-                items[i].style.backgroundColor = barColor;
-                items[j].style.backgroundColor = barColor;
-                items = document.querySelectorAll("#container > .line");
-                i++;
-                j--;
+            } else {
+                await wait(delay);
             }
+            items[temp].style.backgroundColor = barColor;
+            items[j].style.backgroundColor = barColor;
+            items = document.querySelectorAll("#container > .line");
         }
-        return i;
+        await swap(items[i + 1], items[right]);
+        return (i + 1);
     }
 
     async function quickSort(left, right) {
         if (!process) return;
-        let index = await partition(left, right);
-        if (left < index - 1) {
-            await quickSort(left, index - 1);
-        }
-        if (index < right) {
-            await quickSort(index, right);
+        if (left < right) {
+            let pi = await partition(left, right);
+            await quickSort(left, pi - 1);
+            await quickSort(pi + 1, right);
         }
     }
 
