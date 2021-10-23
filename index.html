@@ -44,17 +44,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            margin-left: 10px;
         }
 
         .control {
-            flex: 1;
             display: flex;
             align-items: center;
             justify-content: space-around;
         }
 
         .manage {
-            flex: 3;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -74,10 +73,17 @@
             border: none;
             border-radius: 20px;
             padding: 15px;
+            cursor: pointer;
+            background-color: #337a3c;
+            color: white;
         }
 
         button:hover {
             background-color: teal;
+        }
+
+        button:disabled {
+            background-color: yellow;
         }
     </style>
 </head>
@@ -92,12 +98,12 @@
         <div class="manage">
             <div class="function">
                 <label for="qty">Array Size</label>
-                <input type="range" name="qty" id="qty" min="10" max="300">
+                <input type="range" name="qty" id="qty" min="10" max="300" value="50">
                 <label for="qty" id="qty-label"></label>
             </div>
             <div class="function">
                 <label for="delay">Delay</label>
-                <input type="range" name="delay" id="delay" min="1" max="2500">
+                <input type="range" name="delay" id="delay" min="1" max="2500" value="1500">
                 <label for="delay" id="delay-label"></label>
             </div>
         </div>
@@ -128,19 +134,20 @@
     const reset = document.getElementById('reset');
     const stop = document.getElementById('stop');
 
-    var delay = delay_div.value = 150 / 10;
-    var qty = qty_div.value = 300;
+    var delay = delay_div.value / 10;
+    var qty = qty_div.value;
 
     delay_label.innerText = delay + "ms";
-    delay_div.addEventListener("change", (e) => {
+    delay_div.addEventListener("input", (e) => {
         delay = e.target.value / 10;
         delay_label.innerText = e.target.value / 10 + "ms";
     });
 
     qty_label.innerText = qty;
-    qty_div.addEventListener("change", (e) => {
+    qty_div.addEventListener("input", (e) => {
         qty = e.target.value;
         qty_label.innerText = e.target.value;
+        generateData();
     });
 
     var offset = 0;
@@ -167,7 +174,7 @@
             span.className = "line";
             span.style.height = `${(offset*value).toPrecision()}px`;
             span.style.width = `${val*0.85}px`;
-            span.style.transition = `${delay*0.01}s transform ease`;
+            span.style.transition = `${delay*0.001}s transform ease`;
             span.style.transform = `translateX(${(idx*val).toPrecision()}px)`;
             span.style.backgroundColor = barColor;
             container.appendChild(span);
