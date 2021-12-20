@@ -1,0 +1,74 @@
+body {
+    height: 100vh;
+    margin: 0;
+}
+
+.visual-algo {
+    height: 60%;
+}
+
+#container {
+    width: 90%;
+    margin: 0 auto;
+    height: 100%;
+    padding: 0 10px;
+    background-color: #1a1c1c;
+    position: relative;
+}
+
+.line {
+    position: absolute;
+    bottom: 10px;
+}
+
+.navbar {
+    width: 90%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin: 20px auto;
+    gap: 5px;
+    align-content: center;
+}
+
+.function {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.control {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.manage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px;
+}
+
+.algo {
+    flex: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+button {
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 20px;
+    padding: 15px;
+    cursor: pointer;
+    background-color: #337a3c;
+    color: white;
+}
+
+button:disabled {
+    background-color: lightgray;
+}
